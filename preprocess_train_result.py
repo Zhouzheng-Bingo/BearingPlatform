@@ -22,6 +22,9 @@ from sklearn.metrics import confusion_matrix
 from sklearn import metrics
 import scikitplot as skplt
 
+import matplotlib
+matplotlib.use('TkAgg')  # 或者尝试其他后端，如 'Agg', 'Qt5Agg' 等
+
 
 def plot_history_curcvs(history, save_path, model_name):
     '''
@@ -31,8 +34,8 @@ def plot_history_curcvs(history, save_path, model_name):
     :param model_name: 模型名称
     :return:
     '''
-    acc = history.history['acc']  # 每一轮 在 训练集 上的 精度
-    val_acc = history.history['val_acc']  # 每一轮 在 验证集 上的 精度
+    acc = history.history['accuracy']  # 每一轮 在 训练集 上的 精度
+    val_acc = history.history['val_accuracy']  # 每一轮 在 验证集 上的 精度
     loss = history.history['loss']  # 每一轮 在 训练集 上的 损失
     val_loss = history.history['val_loss']  # 每一轮 在 验证集 上的 损失
 
@@ -75,7 +78,8 @@ def plot_confusion_matrix(model, model_name, save_path, X_test, y_test):
     if 'random_forest' == model_name:
         y_preds = model.predict(X_test)
     else:
-        y_preds = model.predict_classes(X_test)
+        predictions = model.predict(X_test)
+        y_preds = np.argmax(predictions, axis=1)
 
     y_test = [np.argmax(item) for item in y_test]  # one-hot解码
 
@@ -118,7 +122,8 @@ def brief_classification_report(model, model_name, X_test, y_test):
     if 'random_forest' == model_name:
         y_preds = model.predict(X_test)
     else:
-        y_preds = model.predict_classes(X_test)
+        predictions = model.predict(X_test)
+        y_preds = np.argmax(predictions, axis=1)
 
     y_test = [np.argmax(item) for item in y_test]  # one-hot解码
     classification_report = metrics.classification_report(y_test, y_preds)
@@ -140,23 +145,16 @@ def plot_metrics(model, model_name, save_path, X_test, y_test):
         X_test = X_test[:, :, np.newaxis]  # 添加一个新的维度
     elif 'LSTM' == model_name or 'GRU' == model_name:
         X_test = X_test[:, np.newaxis, :]  # 添加一个新的维度
-    # 随机森林不需要添加维度
 
-    y_probas = model.predict_proba(X_test)
+    y_probas = model.predict(X_test)
     y_test = [np.argmax(item) for item in y_test]  # one-hot解码
 
     # 绘制“ROC曲线”
-    skplt.metrics.plot_roc(y_test, y_probas, title=model_name+' ROC Curves', figsize=(7, 7),
-                           # title_fontsize = 24, text_fontsize = 16
-                           )
+    skplt.metrics.plot_roc(y_test, y_probas, title=model_name+' ROC Curves', figsize=(7, 7))
     plt.savefig(save_path + '/' + model_name + '_ROC_Curves.png', dpi=150, bbox_inches='tight')
-    # plt.show()
     plt.close()
 
     # 绘制“精度召回曲线”
-    skplt.metrics.plot_precision_recall(y_test, y_probas, title=model_name+' Precision-Recall Curves', figsize=(7, 7),
-                                        # title_fontsize = 24, text_fontsize = 16
-                                        )
+    skplt.metrics.plot_precision_recall(y_test, y_probas, title=model_name+' Precision-Recall Curves', figsize=(7, 7))
     plt.savefig(save_path + '/' + model_name + '_Precision_Recall_Curves.png', dpi=150, bbox_inches='tight')
-    # plt.show()
     plt.close()

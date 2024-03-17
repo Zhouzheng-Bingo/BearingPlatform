@@ -30,6 +30,7 @@ from preprocess_train_result import plot_history_curcvs, plot_confusion_matrix, 
 from message_signal import MyMessageSignal
 from diagnosis import diagnosis
 from utils import generate_md5
+from tensorflow import config
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # 定义一些全局变量
@@ -155,7 +156,7 @@ class MainWindow(QMainWindow):
         if '1D_CNN' == select_model:
             self.model_name = '1D_CNN'
             text = self.ui.tb_train_result.toPlainText()  # 获得原本显示的文字
-            if test.is_gpu_available():
+            if len(config.experimental.list_physical_devices('GPU')) > 0:
                 self.ui.tb_train_result.setText(text + '\n模型选择：1D_CNN\n检测到GPU可用\n--------------')
             else:
                 self.ui.tb_train_result.setText(text + '\n模型选择：1D_CNN\n未检测到可用GPU\n--------------')
@@ -173,7 +174,7 @@ class MainWindow(QMainWindow):
         elif 'LSTM' == select_model:
             self.model_name = 'LSTM'
             text = self.ui.tb_train_result.toPlainText()  # 获得原本显示的文字
-            if test.is_gpu_available():
+            if len(config.experimental.list_physical_devices('GPU')) > 0:
                 self.ui.tb_train_result.setText(text + '\n模型选择：LSTM\n检测到GPU可用\n--------------')
             else:
                 self.ui.tb_train_result.setText(text + '\n模型选择：LSTM\n未检测到可用GPU\n--------------')
@@ -191,7 +192,7 @@ class MainWindow(QMainWindow):
         elif 'GRU' == select_model:
             self.model_name = 'GRU'
             text = self.ui.tb_train_result.toPlainText()  # 获得原本显示的文字
-            if test.is_gpu_available():
+            if len(config.experimental.list_physical_devices('GPU')) > 0:
                 self.ui.tb_train_result.setText(text + '\n模型选择：GRU\n检测到GPU可用\n--------------')
             else:
                 self.ui.tb_train_result.setText(text + '\n模型选择：GRU\n未检测到可用GPU\n--------------')

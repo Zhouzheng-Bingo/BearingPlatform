@@ -19,6 +19,45 @@ import keras.backend as K
 from feature_extraction import feature_extraction
 
 
+# def diagnosis(diagnosis_samples, model_file_path):
+#     """
+#     故障诊断
+#     :param diagnosis_samples: 数据样本
+#     :param model_file_path: 模型路径
+#     :return: pred_result：诊断结果
+#     """
+#     suffix = model_file_path.split('/')[-1].split('.')[-1]  # 获得所选模型的后缀名
+#     if 'm' == suffix:  # 说明是随机森林
+#         # 提取特征
+#         loader = np.empty(shape=[diagnosis_samples.shape[0], 16])
+#         for i in range(diagnosis_samples.shape[0]):
+#             loader[i] = feature_extraction(diagnosis_samples[i])
+#         diagnosis_samples_feature_extraction = loader
+#
+#         # 加载模型
+#         model = joblib.load(model_file_path)
+#         # 使用模型进行诊断
+#         y_preds = model.predict(diagnosis_samples_feature_extraction)
+#     else:
+#         K.clear_session()
+#         diagnosis_samples_new = diagnosis_samples[:, :, np.newaxis]  # 添加一个新维度
+#         # 加载模型 --- 这里要用这种方法加载，不然加载有的模型会报错，我也不知道为什么
+#         with CustomObjectScope({'GlorotUniform': glorot_uniform()}):
+#             model = load_model(model_file_path)
+#         # 对于CNN模型和LSTM,GRU模型，两者的输入不相同，所以捕捉一下异常，如果上面那种维度错了，那就换一个维度
+#         try:
+#             y_preds = model.predict_classes(diagnosis_samples_new)
+#         except ValueError:
+#             diagnosis_samples_new = diagnosis_samples[:, np.newaxis, :]  # 添加一个新维度
+#             y_preds = model.predict_classes(diagnosis_samples_new)
+#
+#     y_preds = list(y_preds)
+#     # 计算这些样本诊断结果中出现次数最多的结果作为最后结果
+#     y_pred = max(y_preds, key=y_preds.count)
+#     pred_result = result_decode(y_pred)
+#
+#     return pred_result
+
 def diagnosis(diagnosis_samples, model_file_path):
     """
     故障诊断
@@ -46,10 +85,13 @@ def diagnosis(diagnosis_samples, model_file_path):
             model = load_model(model_file_path)
         # 对于CNN模型和LSTM,GRU模型，两者的输入不相同，所以捕捉一下异常，如果上面那种维度错了，那就换一个维度
         try:
-            y_preds = model.predict_classes(diagnosis_samples_new)
+            predictions = model.predict(diagnosis_samples_new)
         except ValueError:
             diagnosis_samples_new = diagnosis_samples[:, np.newaxis, :]  # 添加一个新维度
-            y_preds = model.predict_classes(diagnosis_samples_new)
+            predictions = model.predict(diagnosis_samples_new)
+
+        # 替换 model.predict_classes 为 model.predict 并获取最可能的类别索引
+        y_preds = np.argmax(predictions, axis=-1)
 
     y_preds = list(y_preds)
     # 计算这些样本诊断结果中出现次数最多的结果作为最后结果
