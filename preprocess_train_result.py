@@ -23,7 +23,7 @@ from sklearn import metrics
 import scikitplot as skplt
 
 import matplotlib
-matplotlib.use('TkAgg')  # 或者尝试其他后端，如 'Agg', 'Qt5Agg' 等
+matplotlib.use('Agg')  # 或者尝试其他后端，如 'Agg', 'Qt5Agg' 等
 
 
 def plot_history_curcvs(history, save_path, model_name):
